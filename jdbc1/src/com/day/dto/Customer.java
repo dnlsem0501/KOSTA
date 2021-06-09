@@ -47,13 +47,17 @@ public class Customer {
 		this.enabled = enabled;
 	}
 	public Customer(String id, String pwd, String name, String buildingno) {
-		this(id,pwd,name,buildingno,1);
+		super();
+		this.id = id;
+		this.pwd = pwd;
+		this.name = name;
+		this.buildingno = buildingno;
 	}
 	public Customer() {
 		super();
 	}
 	public Customer(String id, String pwd, String name) {
-		this(id, pwd, name, null, 1);
+		this(id, pwd, name, null);
 	}
 	public Customer(String id, int enabled) {
 		this(id,null,null,null,enabled);

@@ -35,7 +35,6 @@ public class CustomerDAOOracle implements CustomerDAO {
 		try {
 			pstmt = con.prepareStatement(insertSQL);
 			pstmt.setString(1, c.getId());
-			System.out.println(c.getId());
 			pstmt.setString(2, c.getPwd());
 			pstmt.setString(3, c.getName());
 			pstmt.setString(4, c.getBuildingno());
@@ -94,37 +93,73 @@ public class CustomerDAOOracle implements CustomerDAO {
 			throw new ModifyException(e.getMessage());
 		}
 		String updateSQL = "UPDATE customer SET ";
-		if(c.getEnabled()==1) {
-			if(!"".equals(c.getPwd())&&!"".equals(c.getName())&&!"".equals(c.getBuildingno())) {
-				//1.다바꾼다
-				updateSQL +="pwd='"+c.getPwd()+"', name='"+c.getName()
-				+"', buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
-			}else if(!"".equals(c.getPwd())&&!"".equals(c.getName())){
-				//2.비번,이름 바꾼다
-				updateSQL +="pwd='"+c.getPwd()+"', name='"+c.getName()+"' WHERE ID='"+c.getId()+"'";
-			}else if(!"".equals(c.getPwd())&&!"".equals(c.getBuildingno())) {
-				//3.비번, 빌딩넘 바꾼다
-				updateSQL +="pwd='"+c.getPwd()+"', buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
-			}else if(!"".equals(c.getName())&&!"".equals(c.getBuildingno())) {
-				//4.이름,빌딩넘 바꾼다
-				updateSQL +="name='"+c.getName()+"', buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
-			}else if(!"".equals(c.getPwd())) {
-				//5.비번만바꾼다
-				updateSQL +="pwd='"+c.getPwd()+"' WHERE ID='"+c.getId()+"'";
-			}else if(!"".equals(c.getName())) {
-				//6.이름만바꾼다
-				updateSQL +="name='"+c.getName()+"' WHERE ID='"+c.getId()+"'";
-			}else if(!"".equals(c.getBuildingno())) {
-				//7.빌딩넘만바꾼다
-				updateSQL +="buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
-			}else {
-				//안바꾼다;
-				updateSQL = "";
-			}
-		}else if(c.getEnabled()==0) {
-			//탈퇴를한다
-			updateSQL +="enabled=0 WHERE ID='"+c.getId()+"'";
+		String updateSQL1 = " WHERE ID='"+c.getId()+"'";
+		String pwd=c.getPwd();
+		boolean flag = false;
+		if(pwd!=null&&!pwd.equals("")) {
+			updateSQL +="pwd='"+c.getPwd()+"' ";
+			flag=true;
 		}
+		
+		String name=c.getName();
+		if(name!=null&&!name.equals("")) {
+			if(flag) {
+				updateSQL +=",";
+			}
+			updateSQL +="name='"+c.getName()+"' ";
+			flag=true;
+		}
+		String buildingno=c.getBuildingno();
+		if(buildingno!=null&&!buildingno.equals("")) {
+			if(flag) {
+				updateSQL +=",";
+			}
+			updateSQL +="buildingno='"+c.getBuildingno()+"' ";
+			flag=true;
+		}
+		int enabled=c.getEnabled();
+		if(enabled>-1) { // 0 탈퇴, 1 활동
+			if(flag) {
+				updateSQL +=",";
+			}
+			updateSQL +="enabled='"+c.getEnabled()+"' ";
+			flag=true;
+		}
+		if(flag=false) {
+			throw new ModifyException("실패");
+		}
+		updateSQL+=updateSQL1;
+//		if(c.getEnabled()==1) {
+//			if(!"".equals(c.getPwd())&&!"".equals(c.getName())&&!"".equals(c.getBuildingno())) {
+//				//1.다바꾼다
+//				updateSQL +="pwd='"+c.getPwd()+"', name='"+c.getName()
+//				+"', buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
+//			}else if(!"".equals(c.getPwd())&&!"".equals(c.getName())){
+//				//2.비번,이름 바꾼다
+//				updateSQL +="pwd='"+c.getPwd()+"', name='"+c.getName()+"' WHERE ID='"+c.getId()+"'";
+//			}else if(!"".equals(c.getPwd())&&!"".equals(c.getBuildingno())) {
+//				//3.비번, 빌딩넘 바꾼다
+//				updateSQL +="pwd='"+c.getPwd()+"', buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
+//			}else if(!"".equals(c.getName())&&!"".equals(c.getBuildingno())) {
+//				//4.이름,빌딩넘 바꾼다
+//				updateSQL +="name='"+c.getName()+"', buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
+//			}else if(!"".equals(c.getPwd())) {
+//				//5.비번만바꾼다
+//				updateSQL +="pwd='"+c.getPwd()+"' WHERE ID='"+c.getId()+"'";
+//			}else if(!"".equals(c.getName())) {
+//				//6.이름만바꾼다
+//				updateSQL +="name='"+c.getName()+"' WHERE ID='"+c.getId()+"'";
+//			}else if(!"".equals(c.getBuildingno())) {
+//				//7.빌딩넘만바꾼다
+//				updateSQL +="buildingno='"+c.getBuildingno()+"' WHERE ID='"+c.getId()+"'";
+//			}else {
+//				//안바꾼다;
+//				updateSQL = "";
+//			}
+//		}else if(c.getEnabled()==0) {
+//			//탈퇴를한다
+//			updateSQL +="enabled=0 WHERE ID='"+c.getId()+"'";
+//		}
 		Statement stmt = null;
 		try {
 			if(updateSQL=="") {
@@ -177,41 +212,42 @@ public class CustomerDAOOracle implements CustomerDAO {
 //		}
 		
 		//UPDATE
-//		Scanner sc = new Scanner(System.in);
-//		System.out.println("아이디:");
-//		String idValue = sc.nextLine();
-//		System.out.print("비밀번호를 변경하려면 값을 입력하세요.[변경을 원하지 않으면 enter를 누르세요.]:");
-//		String pwdValue = sc.nextLine(); //enter를 누른경우 pwdValue변수값은 ""가 된
-//		System.out.println("입력한 비밀번호값 :[" + pwdValue + "]");
-//		System.out.print("이름을 변경하려면 값을 입력하세요.[변경을 원하지 않으면 enter를 누르세요.]:");
-//		String nameValue = sc.nextLine(); //enter를 누른경우 pwdValue변수값은 ""가 된
-//		System.out.println("입력한 이름값 :[" + nameValue + "]");
-//		System.out.print("빌딩넘버를 변경하려면 값을 입력하세요.[변경을 원하지 않으면 enter를 누르세요.]:");
-//		String buildingnoValue = sc.nextLine(); //enter를 누른경우 pwdValue변수값은 ""가 된
-//		System.out.println("입력한 빌딩넘버값 :[" + buildingnoValue + "]");
-//		Customer c = new Customer (idValue, pwdValue, nameValue, buildingnoValue);
-//		try {
-//			CustomerDAOOracle dao = new CustomerDAOOracle();
-//			dao.update(c);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-		
-		//DELETE
 		Scanner sc = new Scanner(System.in);
 		System.out.println("아이디:");
 		String idValue = sc.nextLine();
-		System.out.println("계정 삭제를 원하시면 0,원하지 않으면 enter를 누르세요");
-		int askDelete = sc.nextInt();
-		if(askDelete==0) {
-			Customer c=new Customer(idValue,askDelete);
-			try {
-				CustomerDAOOracle dao = new CustomerDAOOracle();
-				dao.update(c);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		System.out.print("비밀번호를 변경하려면 값을 입력하세요.[변경을 원하지 않으면 enter를 누르세요.]:");
+		String pwdValue = sc.nextLine(); //enter를 누른경우 pwdValue변수값은 ""가 된
+		System.out.println("입력한 비밀번호값 :[" + pwdValue + "]");
+		System.out.print("이름을 변경하려면 값을 입력하세요.[변경을 원하지 않으면 enter를 누르세요.]:");
+		String nameValue = sc.nextLine(); //enter를 누른경우 pwdValue변수값은 ""가 된
+		System.out.println("입력한 이름값 :[" + nameValue + "]");
+		System.out.print("빌딩넘버를 변경하려면 값을 입력하세요.[변경을 원하지 않으면 enter를 누르세요.]:");
+		String buildingnoValue = sc.nextLine(); //enter를 누른경우 pwdValue변수값은 ""가 된
+		System.out.println("입력한 빌딩넘버값 :[" + buildingnoValue + "]");
+		Customer c = new Customer (idValue, pwdValue, nameValue, buildingnoValue);
+		try {
+			CustomerDAOOracle dao = new CustomerDAOOracle();
+			dao.update(c);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		
+		//DELETE
+//		Scanner sc = new Scanner(System.in);
+//		System.out.println("아이디:");
+//		String idValue = sc.nextLine();
+//		System.out.println("계정 삭제를 원하시면 0,원하지 않으면 enter를 누르세요");
+//		int askDelete = sc.nextInt();
+//		if(askDelete==0) {
+//			Customer c=new Customer(idValue,askDelete);
+//			try {
+//				CustomerDAOOracle dao = new CustomerDAOOracle();
+//				dao.update(c);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+		
+		
 	}
-
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import com.day.dao.CustomerDAO;
-import com.day.dao.ProductDAO;
 import com.day.dto.Customer;
 import com.day.exception.AddException;
 import com.day.exception.FindException;
@@ -40,6 +39,7 @@ public class CustomerService {
 		if(c.getEnabled()==0) {//탈퇴를 할시
 			throw new ModifyException("탈퇴작업은 할 수 없습니다");
 		}
+		c.setEnabled(-1); //????
 		dao.update(c);
 	}
 	public void leave(Customer c) throws ModifyException{
